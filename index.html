@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live GPS Location</title>
+</head>
+<body>
+    <h1>Live GPS Location</h1>
+    <p id="location">Fetching location...</p>
+    <button onclick="sendLocation()">Send Location to Telegram Bot</button>
+
+    <script>
+        const botToken = '7213147350:AAE5v21STgjEYVfzSFYIpANzKqIyCI_IrnE';
+        const chatId = '1188723028';
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                document.getElementById("location").innerHTML = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        function showPosition(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const locationLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            document.getElementById("location").innerHTML = `Latitude: ${latitude} <br> Longitude: ${longitude} <br> <a href="${locationLink}" target="_blank">View on Google Maps</a>`;
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById("location").innerHTML = "User denied the request for Geolocation."
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById("location").innerHTML = "Location information is unavailable."
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById("location").innerHTML = "The request to get user location timed out."
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById("location").innerHTML = "An unknown error occurred."
+                    break;
+            }
+        }
+
+        function sendLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    const message = `Current Location: https://www.google.com/maps?q=${latitude},${longitude}`;
+                    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.ok) {
+                                alert('Location sent successfully!');
+                            } else {
+                                alert('Failed to send location.');
+                            }
+                        })
+                        .catch((error) => {
+                            alert('Error:', error);
+                        });
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        getLocation();
+    </script>
+</body>
+</html>
